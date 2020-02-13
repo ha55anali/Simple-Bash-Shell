@@ -12,3 +12,4 @@ shell.o: shell.cpp
 
 clean:
 	rm -f *.o
+	rm -f *.out
