@@ -12,3 +12,6 @@ void printPrompt();
 
 //takes input from the terminal
 void readCommand(char*& buffer);
+
+//returns array of directories to search
+int parsePath(char *dirs[]);
