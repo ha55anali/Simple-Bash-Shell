@@ -63,21 +63,16 @@ int parsePath(char *dirs[]) {
 void parseCommand(char *commandLine, command_t &command) {
   const char s[2] = " ";
   char *token;
-
-  token = strtok(commandLine, s);
-  //get command name
-  command.name=new char[strlen(token)+1];
-  strcpy(command.name,token);
-
-  // get arguemnts
   command.argc = 0;
   command.argv=new char*[MAX_ARGS];
-  while (1) {
-	token = strtok(NULL, s);
-	if (token==NULL)
-		   break;
+
+  token = strtok(commandLine, s);
+
+  while (token != NULL) {
 	command.argv[command.argc] = new char[strlen(token) + 1];
 	strcpy(command.argv[command.argc], token);
 	++command.argc;
+	
+	token = strtok(NULL, s);
   }
 }
