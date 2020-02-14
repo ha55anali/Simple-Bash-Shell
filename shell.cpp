@@ -61,58 +61,23 @@ int parsePath(char *dirs[]) {
 }
 
 void parseCommand(char *commandLine, command_t &command) {
-  // get command name
-  char buff[MAX_COMMAND] = "";
-  int buffCount=0;
-  int count = 0;
-  while (1) {
-	if (commandLine[count] == ' ' || commandLine[count] == '\0') {
-	  command.name = new char[strlen(buff) + 1];
-	  strcpy(command.name, buff);
+  const char s[2] = " ";
+  char *token;
 
-	  buffCount = 0;
-	  buff[0] = '\0';
-	  ++count;
+  token = strtok(commandLine, s);
+  //get command name
+  command.name=new char[strlen(token)+1];
+  strcpy(command.name,token);
 
-	  break;
-	} else {
-	  buff[buffCount] = commandLine[count];
-	  buff[buffCount+1] = '\0';
-	  ++buffCount;
-	  ++count;
-	  
-
-	}
-  }
-
-  // get command line arguments
+  // get arguemnts
   command.argc = 0;
+  command.argv=new char*[MAX_ARGS];
   while (1) {
-	if (commandLine[count] == '\0') {
-	  command.argv[command.argc] = new char[strlen(buff) + 1];
-	  strcpy(command.argv[command.argc], buff);
-
-	  buffCount = 0;
-	  buff[0] = '\0';
-	  ++count;
-	  ++(command.argc);
-
-	  break;
-	}
-	if (commandLine[count] == ' ') {
-	  command.argv[command.argc] = new char[strlen(buff) + 1];
-	  strcpy(command.argv[command.argc], buff);
-
-	  buffCount = 0;
-	  buff[0] = '\0';
-	  ++count;
-	  ++(command.argc);
-
-	} else {
-	  buff[buffCount] = commandLine[count];
-	  ++buffCount;
-	  ++count;
-	  buff[buffCount] = '\0';
-	}
+	token = strtok(NULL, s);
+	if (token==NULL)
+		   break;
+	command.argv[command.argc] = new char[strlen(token) + 1];
+	strcpy(command.argv[command.argc], token);
+	++command.argc;
   }
 }

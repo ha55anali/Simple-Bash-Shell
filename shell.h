@@ -13,7 +13,6 @@ struct command_t {
   int argc;
   char **argv;
 
-  command_t() { argv = new char *[MAX_ARGS]; }
 };
 
 // print prompt for terminal
