@@ -26,3 +26,5 @@ int parsePath(char *dirs[]);
 
 // parses string into command_t
 void parseCommand(char *commandLine, command_t &command);
+
+char *lookupPath(char **argv, char **dir); 

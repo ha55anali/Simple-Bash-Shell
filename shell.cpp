@@ -76,3 +76,45 @@ void parseCommand(char *commandLine, command_t &command) {
 	token = strtok(NULL, s);
   }
 }
+
+char *lookupPath(char **argv, char **dir) {
+  char *result;
+
+  // Check to see if file name is already an absolute path
+  if (*argv[0] == '/') {
+	result =new char[strlen(argv[0]) + 1];
+	strcpy(result, argv[0]);
+
+	return result;
+  }
+
+  // Look in PATH directories.
+  char* tempPath=new char[MAX_PATH_LEN];
+
+  for (int d = 0; dir[d] != NULL; ++d) {
+	//create file path
+	strcpy(tempPath, dir[d]);
+	strcat(tempPath,"/");
+	strcat(tempPath, argv[0]);
+
+	// santize input
+	result = new char[strlen(tempPath) + 1];
+	for (int tempCount = 0, resCount = 0; tempCount < strlen(tempPath);
+		 ++tempCount) {
+	  if (tempPath[tempCount] != '\n') {
+		result[resCount] = tempPath[tempCount];
+		++resCount;
+	  }
+	}
+
+	if (access(result, F_OK) != -1) {
+       delete[] tempPath;
+	  return result;
+	}
+  }
+
+  // File name not found in any path variable
+  fprintf(stderr, "%s: command not found\n", argv[0]);
+  delete[] tempPath;
+  return NULL;
+}
