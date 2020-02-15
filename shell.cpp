@@ -12,6 +12,12 @@ void readCommand(char *&buffer) {
   buffer = new char[MAX_COMMAND];
 
   fgets(buffer, MAX_COMMAND, stdin);
+
+  // remove newline char
+  for (int c = 0; c < strlen(buffer); ++c) {
+	if (buffer[c] == '\n')
+	  buffer[c] = '\0';
+  }
 }
 
 int parsePath(char *dirs[]) {
@@ -97,19 +103,8 @@ char *lookupPath(char **argv, char **dir) {
 	strcat(tempPath,"/");
 	strcat(tempPath, argv[0]);
 
-	// santize input
-	result = new char[strlen(tempPath) + 1];
-	for (int tempCount = 0, resCount = 0; tempCount < strlen(tempPath);
-		 ++tempCount) {
-	  if (tempPath[tempCount] != '\n') {
-		result[resCount] = tempPath[tempCount];
-		++resCount;
-	  }
-	}
-
-	if (access(result, F_OK) != -1) {
-       delete[] tempPath;
-	  return result;
+	if (access(tempPath, F_OK) != -1) {
+	  return tempPath;
 	}
   }
 
