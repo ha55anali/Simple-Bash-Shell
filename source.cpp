@@ -13,15 +13,18 @@ int main() {
   char *commandLine;
   command_t command;
 
+  //get list of directories
   char **dirs = new char *[MAX_PATHS];
   parsePath(dirs);
 
   while (1) {
 	printPrompt();
 
+	//get command from terminal
 	readCommand(commandLine);
 	parseCommand(commandLine, command);
 
+	//check if command exists
 	command.name = lookupPath(command.argv, dirs);
 	if (command.name == NULL) {
 	  /* Report error */
@@ -38,5 +41,12 @@ int main() {
 		//[> Wait for the child to terminate <]
 	wait(NULL);
   }
-  return 1;
+
+  delete[] commandLine;
+  for (int c=0;c<MAX_ARGS;++c)
+  {
+	if (dirs[c]!=NULL)
+		   delete[] dirs[c];
+  }
+  delete[] dirs;
 }
