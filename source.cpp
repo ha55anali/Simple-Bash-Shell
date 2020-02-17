@@ -24,22 +24,25 @@ int main() {
 	readCommand(commandLine);
 	parseCommand(commandLine, command);
 
-	//check if command exists
-	command.name = lookupPath(command.argv, dirs);
-	if (command.name == NULL) {
-	  /* Report error */
-	  cout<<"error ";
-	  continue;
-	}
+	if (internalComm(command,dirs) == 0) {
 
-	//[> Create child and execute the command <]
-	int pid=fork();
+	  // check if command exists
+	  command.name = lookupPath(command.argv, dirs);
+	  if (command.name == NULL) {
+		/* Report error */
+		cout << "error ";
+		continue;
+	  }
 
-	if (pid==0){
-		execv(command.name,command.argv);
+	  //[> Create child and execute the command <]
+	  int pid = fork();
+
+	  if (pid == 0) {
+		execv(command.name, command.argv);
+	  }
+	  //[> Wait for the child to terminate <]
+	  wait(NULL);
 	}
-		//[> Wait for the child to terminate <]
-	wait(NULL);
   }
 
   delete[] commandLine;

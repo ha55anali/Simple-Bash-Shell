@@ -113,3 +113,28 @@ char *lookupPath(char **argv, char **dir) {
   delete[] tempPath;
   return NULL;
 }
+
+bool internalComm(command_t &command, char ** dirs) {
+
+  if (strcmp(command.argv[0], "cd") == 0) {
+
+	if (chdir(command.argv[1]) == 0) {
+
+	  char cwd[MAX_PATH_LEN];
+	  // replace working directory in dirs
+	  if (getcwd(cwd, sizeof(cwd)) != NULL) {
+		int c = 0;
+		for (; dirs[c] != NULL; ++c)
+		  ;
+		--c;
+		delete[] dirs[c];
+		strcpy(dirs[c], cwd);
+	  }
+	} else
+	  cout << "error, cannot change directory";
+
+	return 1;
+  }
+
+  return 0;
+}
