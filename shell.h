@@ -8,25 +8,25 @@
 #define WHITESPACE " .,\t\n"
 #define MAX_COMMAND 300
 
-struct command_t {
-  char *name;
-  int argc;
-  char **argv;
-
+struct command_t
+{
+	char* name;
+	int argc;
+	char** argv;
 };
 
 // print prompt for terminal
 void printPrompt();
 
 // takes input from the terminal
-void readCommand(char *&buffer);
+void readCommand(char*& buffer);
 
 // returns array of directories to search
-int parsePath(char *dirs[]);
+int parsePath(char* dirs[]);
 
 // parses string into command_t
-void parseCommand(char *commandLine, command_t &command);
+void parseCommand(char* commandLine, command_t& command);
 
-char *lookupPath(char **argv, char **dir); 
+char* lookupPath(char** argv, char** dir);
 
-bool internalComm(command_t & command,char** dirs);
+bool internalComm(command_t& command, char** dirs);
