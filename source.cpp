@@ -22,30 +22,7 @@ int main()
 
 		//get command from terminal
 		readCommand(commandLine);
-		parseCommand(commandLine, command);
-
-		if(internalComm(command, dirs) == 0)
-		{
-
-			// check if command exists
-			command.name = lookupPath(command.argv, dirs);
-			if(command.name == NULL)
-			{
-				/* Report error */
-				cout << "error ";
-				continue;
-			}
-
-			//[> Create child and execute the command <]
-			int pid = fork();
-
-			if(pid == 0)
-			{
-				execv(command.name, command.argv);
-			}
-			//[> Wait for the child to terminate <]
-			wait(NULL);
-		}
+    executeCommand(commandLine,command,dirs);
 	}
 
 	delete[] commandLine;

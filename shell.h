@@ -15,6 +15,8 @@ struct command_t
 	char** argv;
 };
 
+void executeCommand(char* commandLine, command_t& command, char** dirs);
+
 // print prompt for terminal
 void printPrompt();
 

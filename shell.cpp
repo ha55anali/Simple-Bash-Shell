@@ -3,8 +3,36 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 using namespace std;
+
+void executeCommand(char* commandLine, command_t& command, char** dirs){
+  parseCommand(commandLine, command);
+
+  if(internalComm(command, dirs) == 0)
+		{
+
+			// check if command exists
+			command.name = lookupPath(command.argv, dirs);
+			if(command.name == NULL)
+        {
+          /* Report error */
+          cout << "error ";
+          return;
+        }
+
+			//[> Create child and execute the command <]
+			int pid = fork();
+
+			if(pid == 0)
+        {
+          execv(command.name, command.argv);
+        }
+			//[> Wait for the child to terminate <]
+			wait(NULL);
+		}
+}
 
 void printPrompt()
 {
