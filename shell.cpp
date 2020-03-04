@@ -1,4 +1,5 @@
 #include "shell.h"
+#include <queue>
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
@@ -7,7 +8,62 @@
 
 using namespace std;
 
-void executeCommand(char* commandLine, command_t& command, char** dirs){
+void pipedExecute(char* commandLine, command_t& command, char** dirs){
+  queue<char*> comm;
+  char* token=strtok(commandLine,"|");
+  while (token != NULL){
+    char * temp=new char[strlen(token)+1];
+    strcpy(temp,token);
+    comm.push(temp);
+
+    token=strtok(NULL,"|");
+  }
+
+  if (comm.size() == 1){
+    token=comm.front();
+    comm.pop();
+
+    executeCommand(token,command,dirs,NULL,NULL);
+    return;
+  }
+
+  int inPipe[2];
+  int outPipe[2];
+
+  //get first command
+  token=comm.front();
+  comm.pop();
+
+  //execute first command
+  pipe(outPipe);
+  executeCommand(token,command,dirs,NULL,outPipe);
+
+  recCall(comm,command,dirs,outPipe);
+
+  close(outPipe[1]);
+  close(outPipe[0]);
+}
+
+void recCall(queue<char*>& q,command_t& command, char** dirs,int* inPipe){
+  
+  char* comman=q.front();
+  q.pop();
+
+  if (q.size()==1){
+    int pOut[2];
+    pipe(pOut);
+
+    executeCommand(comman,command,dirs,inPipe,pOut);
+
+    recCall(q,command,dirs,pOut);
+    close(pOut[0]);
+    close(pOut[1]);
+  }
+
+  executeCommand(comman,command,dirs,inPipe,NULL);
+}
+
+void executeCommand(char* commandLine, command_t& command, char** dirs, int *inPipe, int* outPipe){
   parseCommand(commandLine, command);
 
   if(internalComm(command, dirs) == 0)
@@ -27,9 +83,25 @@ void executeCommand(char* commandLine, command_t& command, char** dirs){
 
 			if(pid == 0)
         {
+          if (inPipe != NULL){
+            close(inPipe[1]);
+            dup2(inPipe[0],0);
+            close(inPipe[0]);
+          }
+          if (outPipe !=NULL){
+            close(outPipe[0]);
+            dup2(outPipe[1],1);
+            close(outPipe[1]);
+          }
+
           execv(command.name, command.argv);
         }
+
 			//[> Wait for the child to terminate <]
+      if (inPipe != NULL)
+        close(inPipe[0]);
+      if (outPipe != NULL)
+        close(outPipe[1]);
 			wait(NULL);
 		}
 }

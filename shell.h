@@ -1,4 +1,7 @@
 #pragma once
+#include <queue>
+
+using namespace std;
 
 #define LINE_LEN 80
 #define MAX_ARGS 64
@@ -15,7 +18,11 @@ struct command_t
 	char** argv;
 };
 
-void executeCommand(char* commandLine, command_t& command, char** dirs);
+void recCall(queue<char*>& q,command_t& command, char** dirs,int* inPipe);
+
+void pipedExecute(char* commandLine, command_t& command, char** dirs);
+
+void executeCommand(char* commandLine, command_t& command, char** dirs, int *inPipe, int* outPipe);
 
 // print prompt for terminal
 void printPrompt();

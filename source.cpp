@@ -22,7 +22,8 @@ int main()
 
 		//get command from terminal
 		readCommand(commandLine);
-    executeCommand(commandLine,command,dirs);
+    // executeCommand(commandLine,command,dirs);
+    pipedExecute(commandLine,command,dirs);
 	}
 
 	delete[] commandLine;
