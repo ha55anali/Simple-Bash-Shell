@@ -179,6 +179,8 @@ int parsePath(char* dirs[])
 
 void parseCommand(char* commandLine, command_t& command)
 {
+  parseIO(commandLine,command);
+
 	const char s[2] = " ";
 	char* token;
 	command.argc = 0;
@@ -194,6 +196,69 @@ void parseCommand(char* commandLine, command_t& command)
 
 		token = strtok(NULL, s);
 	}
+}
+
+bool checkAlphaNum(char n)
+{
+  bool t=0;
+  if (n>='a' && n<='z')
+    t=1;
+
+  if (n>='A' && n<='Z')
+    t=1;
+
+  if (n>='0' && n<='9')
+    t=1;
+
+  return t;
+}
+
+void parseIO(char* commandLine,command_t& command)
+{
+  command.input=NULL;
+  command.output=NULL;
+
+  //get input file
+  int iC=0;
+  //start of input file
+  for (;iC<strlen(commandLine);++iC)
+    if (commandLine[iC] == '<')
+      break;
+  //copy to struct
+  if (iC != strlen(commandLine))
+    {
+      int inLenght=0;
+      ++iC;
+
+      //get lenght of filename
+      for (;checkAlphaNum(commandLine[iC+inLenght])==1;++inLenght);
+      command.input=new char[inLenght+1];
+      //copy filename
+      for (int c=0;c<inLenght;c++){
+        command.input[c]=commandLine[c+iC];
+        command.input[c+1]='\0';
+      }
+      
+    }
+  //get output file
+  int oC=0;
+  for (;oC<strlen(commandLine);++oC)
+    if (commandLine[oC] == '>')
+      break;
+  if (oC != strlen(commandLine))
+    {
+      int oLenght=0;
+      ++oC;
+      for (;checkAlphaNum(commandLine[oC+oLenght])==1;++oLenght);
+      command.output=new char[oLenght+1];
+      for (int c=0;c<oLenght;c++){
+        command.output[c]=commandLine[c+oC];
+        command.output[c+1]='\0';
+      }
+      
+    }
+
+  commandLine[min(oC,iC)-1]='\0';
 }
 
 char* lookupPath(char** argv, char** dir)

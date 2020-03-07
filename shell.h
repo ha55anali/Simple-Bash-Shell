@@ -16,6 +16,9 @@ struct command_t
 	char* name;
 	int argc;
 	char** argv;
+
+  char* input;
+  char* output;
 };
 
 void recCall(queue<char*>& q,command_t& command, char** dirs,int* inPipe);
@@ -35,6 +38,10 @@ int parsePath(char* dirs[]);
 
 // parses string into command_t
 void parseCommand(char* commandLine, command_t& command);
+
+void parseIO(char* commandLine,command_t& command);
+
+bool checkAlphaNum(char n);
 
 char* lookupPath(char** argv, char** dir);
 
