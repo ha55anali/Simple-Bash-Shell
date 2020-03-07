@@ -1,4 +1,9 @@
 #include "shell.h"
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <queue>
 #include <iostream>
 #include <stdio.h>
@@ -93,7 +98,18 @@ void executeCommand(char* commandLine, command_t& command, char** dirs, int *inP
             dup2(outPipe[1],1);
             close(outPipe[1]);
           }
-
+          if (inPipe == NULL){
+            //first command in pipe
+            int file=open(command.input,O_RDONLY);
+            dup2(file,0);
+            close(file);
+          }
+          if (outPipe == NULL){
+            //last command in pipe
+            int file=open(command.output,O_WRONLY | O_CREAT);
+            dup2(file,1);
+            close(file);
+          }
           execv(command.name, command.argv);
         }
 
