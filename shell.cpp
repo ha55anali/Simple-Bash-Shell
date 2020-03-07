@@ -209,6 +209,8 @@ bool checkAlphaNum(char n)
 
   if (n>='0' && n<='9')
     t=1;
+  if (n=='.')
+    t=1;
 
   return t;
 }
@@ -228,14 +230,13 @@ void parseIO(char* commandLine,command_t& command)
   if (iC != strlen(commandLine))
     {
       int inLenght=0;
-      ++iC;
 
       //get lenght of filename
-      for (;checkAlphaNum(commandLine[iC+inLenght])==1;++inLenght);
+      for (;checkAlphaNum(commandLine[iC+inLenght+1])==1;++inLenght);
       command.input=new char[inLenght+1];
       //copy filename
       for (int c=0;c<inLenght;c++){
-        command.input[c]=commandLine[c+iC];
+        command.input[c]=commandLine[c+iC+1];
         command.input[c+1]='\0';
       }
       
@@ -248,17 +249,17 @@ void parseIO(char* commandLine,command_t& command)
   if (oC != strlen(commandLine))
     {
       int oLenght=0;
-      ++oC;
-      for (;checkAlphaNum(commandLine[oC+oLenght])==1;++oLenght);
+
+      for (;checkAlphaNum(commandLine[oC+oLenght+1])==1;++oLenght);
       command.output=new char[oLenght+1];
       for (int c=0;c<oLenght;c++){
-        command.output[c]=commandLine[c+oC];
+        command.output[c]=commandLine[c+oC+1];
         command.output[c+1]='\0';
       }
       
     }
 
-  commandLine[min(oC,iC)-1]='\0';
+  commandLine[min(oC,iC)]='\0';
 }
 
 char* lookupPath(char** argv, char** dir)
