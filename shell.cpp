@@ -1,142 +1,153 @@
 #include "shell.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
-#include <queue>
 #include <iostream>
+#include <queue>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 using namespace std;
 
-void pipedExecute(char* commandLine, command_t& command, char** dirs){
-  queue<char*> comm;
-  char* token=strtok(commandLine,"|");
-  while (token != NULL){
-    char * temp=new char[strlen(token)+1];
-    strcpy(temp,token);
-    comm.push(temp);
+void pipedExecute(char* commandLine, command_t& command, char** dirs)
+{
+	queue<char*> comm;
+	char* token = strtok(commandLine, "|");
+	while(token != NULL)
+	{
+		char* temp = new char[strlen(token) + 1];
+		strcpy(temp, token);
+		comm.push(temp);
 
-    token=strtok(NULL,"|");
-  }
+		token = strtok(NULL, "|");
+	}
 
-  if (comm.size() == 1){
-    token=comm.front();
-    comm.pop();
+	if(comm.size() == 1)
+	{
+		token = comm.front();
+		comm.pop();
 
-    executeCommand(token,command,dirs,NULL,NULL);
-    return;
-  }
+		executeCommand(token, command, dirs, NULL, NULL);
+		return;
+	}
 
-  int inPipe[2];
-  int outPipe[2];
+	int inPipe[2];
+	int outPipe[2];
 
-  //get first command
-  token=comm.front();
-  comm.pop();
+	//get first command
+	token = comm.front();
+	comm.pop();
 
-  //execute first command
-  pipe(outPipe);
-  executeCommand(token,command,dirs,NULL,outPipe);
+	//execute first command
+	pipe(outPipe);
+	executeCommand(token, command, dirs, NULL, outPipe);
 
-  recCall(comm,command,dirs,outPipe);
+	recCall(comm, command, dirs, outPipe);
 
-  close(outPipe[1]);
-  close(outPipe[0]);
+	close(outPipe[1]);
+	close(outPipe[0]);
 }
 
-void recCall(queue<char*>& q,command_t& command, char** dirs,int* inPipe){
-  
-  char* comman=q.front();
-  q.pop();
+void recCall(queue<char*>& q, command_t& command, char** dirs, int* inPipe)
+{
 
-  if (q.size()==1){
-    int pOut[2];
-    pipe(pOut);
+	char* comman = q.front();
+	q.pop();
 
-    executeCommand(comman,command,dirs,inPipe,pOut);
+	if(q.size() == 1)
+	{
+		int pOut[2];
+		pipe(pOut);
 
-    recCall(q,command,dirs,pOut);
-    close(pOut[0]);
-    close(pOut[1]);
-  }
+		executeCommand(comman, command, dirs, inPipe, pOut);
 
-  executeCommand(comman,command,dirs,inPipe,NULL);
+		recCall(q, command, dirs, pOut);
+		close(pOut[0]);
+		close(pOut[1]);
+	}
+
+	executeCommand(comman, command, dirs, inPipe, NULL);
 }
 
-void executeCommand(char* commandLine, command_t& command, char** dirs, int *inPipe, int* outPipe){
-  parseCommand(commandLine, command);
+void executeCommand(char* commandLine, command_t& command, char** dirs, int* inPipe, int* outPipe)
+{
+	parseCommand(commandLine, command);
 
-  if(internalComm(command, dirs) == 0)
+	if(internalComm(command, dirs) == 0)
+	{
+
+		// check if command exists
+		command.name = lookupPath(command.argv, dirs);
+		if(command.name == NULL)
 		{
-
-			// check if command exists
-			command.name = lookupPath(command.argv, dirs);
-			if(command.name == NULL)
-        {
-          /* Report error */
-          cout << "error ";
-          return;
-        }
-
-			//[> Create child and execute the command <]
-			int pid = fork();
-
-			if(pid == 0)
-        {
-          if (inPipe != NULL){
-            close(inPipe[1]);
-            dup2(inPipe[0],0);
-            close(inPipe[0]);
-          }
-          if (outPipe !=NULL){
-            close(outPipe[0]);
-            dup2(outPipe[1],1);
-            close(outPipe[1]);
-          }
-          if (inPipe == NULL){
-            //first command in pipe
-            int file=open(command.input,O_RDONLY);
-            dup2(file,0);
-            close(file);
-          }
-          if (outPipe == NULL){
-            //last command in pipe
-            int file=open(command.output,O_WRONLY | O_CREAT);
-            dup2(file,1);
-            close(file);
-          }
-          execv(command.name, command.argv);
-        }
-
-			//[> Wait for the child to terminate <]
-      if (inPipe != NULL)
-        close(inPipe[0]);
-      if (outPipe != NULL)
-        close(outPipe[1]);
-			wait(NULL);
+			/* Report error */
+			cout << "error ";
+			return;
 		}
+
+		//[> Create child and execute the command <]
+		int pid = fork();
+
+		if(pid == 0)
+		{
+			if(inPipe != NULL)
+			{
+				close(inPipe[1]);
+				dup2(inPipe[0], 0);
+				close(inPipe[0]);
+			}
+			if(outPipe != NULL)
+			{
+				close(outPipe[0]);
+				dup2(outPipe[1], 1);
+				close(outPipe[1]);
+			}
+			if(inPipe == NULL)
+			{
+				//first command in pipe
+				int file = open(command.input, O_RDONLY);
+				dup2(file, 0);
+				close(file);
+			}
+			if(outPipe == NULL)
+			{
+				//last command in pipe
+				int file = open(command.output, O_WRONLY | O_CREAT);
+				dup2(file, 1);
+				close(file);
+			}
+			execv(command.name, command.argv);
+		}
+
+		//[> Wait for the child to terminate <]
+		if(inPipe != NULL)
+			close(inPipe[0]);
+		if(outPipe != NULL)
+			close(outPipe[1]);
+		wait(NULL);
+	}
 }
 
 void printPrompt()
 {
-  //get current folder
+	//get current folder
 	char cwd[MAX_PATH_LEN];
 	getcwd(cwd, sizeof(cwd));
-  char* token;
-  char* tokenPrev;
-  token=strtok(cwd,"/");
-  tokenPrev=token;
-  while(token != NULL){
-    tokenPrev=token;
-    token=strtok(NULL,"/");
-  }
+	char* token;
+	char* tokenPrev;
+	token = strtok(cwd, "/");
+	tokenPrev = token;
+	while(token != NULL)
+	{
+		tokenPrev = token;
+		token = strtok(NULL, "/");
+	}
 
-	cout << endl << "[myBamsh " << tokenPrev <<"]$ ";
+	cout << endl << "[myBamsh " << tokenPrev << "]$ ";
 }
 
 void readCommand(char*& buffer)
@@ -207,7 +218,7 @@ int parsePath(char* dirs[])
 
 void parseCommand(char* commandLine, command_t& command)
 {
-  parseIO(commandLine,command);
+	parseIO(commandLine, command);
 
 	const char s[2] = " ";
 	char* token;
@@ -228,66 +239,68 @@ void parseCommand(char* commandLine, command_t& command)
 
 bool checkAlphaNum(char n)
 {
-  bool t=0;
-  if (n>='a' && n<='z')
-    t=1;
+	bool t = 0;
+	if(n >= 'a' && n <= 'z')
+		t = 1;
 
-  if (n>='A' && n<='Z')
-    t=1;
+	if(n >= 'A' && n <= 'Z')
+		t = 1;
 
-  if (n>='0' && n<='9')
-    t=1;
-  if (n=='.')
-    t=1;
+	if(n >= '0' && n <= '9')
+		t = 1;
+	if(n == '.')
+		t = 1;
 
-  return t;
+	return t;
 }
 
-void parseIO(char* commandLine,command_t& command)
+void parseIO(char* commandLine, command_t& command)
 {
-  command.input=NULL;
-  command.output=NULL;
+	command.input = NULL;
+	command.output = NULL;
 
-  //get input file
-  int iC=0;
-  //start of input file
-  for (;iC<strlen(commandLine);++iC)
-    if (commandLine[iC] == '<')
-      break;
-  //copy to struct
-  if (iC != strlen(commandLine))
-    {
-      int inLenght=0;
+	//get input file
+	int iC = 0;
+	//start of input file
+	for(; iC < strlen(commandLine); ++iC)
+		if(commandLine[iC] == '<')
+			break;
+	//copy to struct
+	if(iC != strlen(commandLine))
+	{
+		int inLenght = 0;
 
-      //get lenght of filename
-      for (;checkAlphaNum(commandLine[iC+inLenght+1])==1;++inLenght);
-      command.input=new char[inLenght+1];
-      //copy filename
-      for (int c=0;c<inLenght;c++){
-        command.input[c]=commandLine[c+iC+1];
-        command.input[c+1]='\0';
-      }
-      
-    }
-  //get output file
-  int oC=0;
-  for (;oC<strlen(commandLine);++oC)
-    if (commandLine[oC] == '>')
-      break;
-  if (oC != strlen(commandLine))
-    {
-      int oLenght=0;
+		//get lenght of filename
+		for(; checkAlphaNum(commandLine[iC + inLenght + 1]) == 1; ++inLenght)
+			;
+		command.input = new char[inLenght + 1];
+		//copy filename
+		for(int c = 0; c < inLenght; c++)
+		{
+			command.input[c] = commandLine[c + iC + 1];
+			command.input[c + 1] = '\0';
+		}
+	}
+	//get output file
+	int oC = 0;
+	for(; oC < strlen(commandLine); ++oC)
+		if(commandLine[oC] == '>')
+			break;
+	if(oC != strlen(commandLine))
+	{
+		int oLenght = 0;
 
-      for (;checkAlphaNum(commandLine[oC+oLenght+1])==1;++oLenght);
-      command.output=new char[oLenght+1];
-      for (int c=0;c<oLenght;c++){
-        command.output[c]=commandLine[c+oC+1];
-        command.output[c+1]='\0';
-      }
-      
-    }
+		for(; checkAlphaNum(commandLine[oC + oLenght + 1]) == 1; ++oLenght)
+			;
+		command.output = new char[oLenght + 1];
+		for(int c = 0; c < oLenght; c++)
+		{
+			command.output[c] = commandLine[c + oC + 1];
+			command.output[c + 1] = '\0';
+		}
+	}
 
-  commandLine[min(oC,iC)]='\0';
+	commandLine[min(oC, iC)] = '\0';
 }
 
 char* lookupPath(char** argv, char** dir)

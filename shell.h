@@ -17,15 +17,15 @@ struct command_t
 	int argc;
 	char** argv;
 
-  char* input;
-  char* output;
+	char* input;
+	char* output;
 };
 
-void recCall(queue<char*>& q,command_t& command, char** dirs,int* inPipe);
+void recCall(queue<char*>& q, command_t& command, char** dirs, int* inPipe);
 
 void pipedExecute(char* commandLine, command_t& command, char** dirs);
 
-void executeCommand(char* commandLine, command_t& command, char** dirs, int *inPipe, int* outPipe);
+void executeCommand(char* commandLine, command_t& command, char** dirs, int* inPipe, int* outPipe);
 
 // print prompt for terminal
 void printPrompt();
@@ -39,7 +39,7 @@ int parsePath(char* dirs[]);
 // parses string into command_t
 void parseCommand(char* commandLine, command_t& command);
 
-void parseIO(char* commandLine,command_t& command);
+void parseIO(char* commandLine, command_t& command);
 
 bool checkAlphaNum(char n);
 
