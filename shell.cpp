@@ -15,6 +15,7 @@ using namespace std;
 
 void pipedExecute(char* commandLine, command_t& command, char** dirs)
 {
+	//tokenize commands and fill queue comm
 	queue<char*> comm;
 	char* token = strtok(commandLine, "|");
 	while(token != NULL)
@@ -26,6 +27,7 @@ void pipedExecute(char* commandLine, command_t& command, char** dirs)
 		token = strtok(NULL, "|");
 	}
 
+	//if no pipes
 	if(comm.size() == 1)
 	{
 		token = comm.front();
@@ -69,11 +71,11 @@ void recCall(queue<char*>& q, command_t& command, char** dirs, int* inPipe)
 		close(pOut[0]);
 		close(pOut[1]);
 
-    return;
+		return;
 	}
-  //last piped command
-  else
-    executeCommand(comman, command, dirs, inPipe, NULL);
+	//last piped command
+	else
+		executeCommand(comman, command, dirs, inPipe, NULL);
 }
 
 void executeCommand(char* commandLine, command_t& command, char** dirs, int* inPipe, int* outPipe)
@@ -87,12 +89,10 @@ void executeCommand(char* commandLine, command_t& command, char** dirs, int* inP
 		command.name = lookupPath(command.argv, dirs);
 		if(command.name == NULL)
 		{
-			/* Report error */
-			cout << "error ";
+			cout << "Error in executing command ";
 			return;
 		}
 
-		//[> Create child and execute the command <]
 		int pid = fork();
 
 		if(pid == 0)
@@ -126,7 +126,6 @@ void executeCommand(char* commandLine, command_t& command, char** dirs, int* inP
 			execv(command.name, command.argv);
 		}
 
-		//[> Wait for the child to terminate <]
 		if(inPipe != NULL)
 			close(inPipe[0]);
 		if(outPipe != NULL)
@@ -221,8 +220,10 @@ int parsePath(char* dirs[])
 
 void parseCommand(char* commandLine, command_t& command)
 {
+	//parse io redirection
 	parseIO(commandLine, command);
 
+	//store arguments in command.argv
 	const char s[2] = " ";
 	char* token;
 	command.argc = 0;
@@ -303,6 +304,7 @@ void parseIO(char* commandLine, command_t& command)
 		}
 	}
 
+	//remove io redirection from commandLine string
 	commandLine[min(oC, iC)] = '\0';
 }
 
