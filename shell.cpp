@@ -124,7 +124,19 @@ void executeCommand(char* commandLine, command_t& command, char** dirs, int *inP
 
 void printPrompt()
 {
-	cout << endl << "myBamsh>>";
+  //get current folder
+	char cwd[MAX_PATH_LEN];
+	getcwd(cwd, sizeof(cwd));
+  char* token;
+  char* tokenPrev;
+  token=strtok(cwd,"/");
+  tokenPrev=token;
+  while(token != NULL){
+    tokenPrev=token;
+    token=strtok(NULL,"/");
+  }
+
+	cout << endl << "[myBamsh " << tokenPrev <<"]$ ";
 }
 
 void readCommand(char*& buffer)
