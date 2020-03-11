@@ -21,6 +21,7 @@ struct command_t
 	char* output;
 };
 
+//recursive execution of commands in queue
 void recCall(queue<char*>& q, command_t& command, char** dirs, int* inPipe);
 
 void pipedExecute(char* commandLine, command_t& command, char** dirs);

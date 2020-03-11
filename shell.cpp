@@ -68,9 +68,12 @@ void recCall(queue<char*>& q, command_t& command, char** dirs, int* inPipe)
 		recCall(q, command, dirs, pOut);
 		close(pOut[0]);
 		close(pOut[1]);
-	}
 
-	executeCommand(comman, command, dirs, inPipe, NULL);
+    return;
+	}
+  //last piped command
+  else
+    executeCommand(comman, command, dirs, inPipe, NULL);
 }
 
 void executeCommand(char* commandLine, command_t& command, char** dirs, int* inPipe, int* outPipe)
