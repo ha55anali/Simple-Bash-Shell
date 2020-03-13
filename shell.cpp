@@ -119,7 +119,7 @@ void executeCommand(char* commandLine, command_t& command, char** dirs, int* inP
 			if(outPipe == NULL)
 			{
 				//last command in pipe
-				int file = open(command.output, O_WRONLY | O_CREAT);
+				int file = open(command.output, O_WRONLY | O_CREAT | O_TRUNC, 0666);
 				dup2(file, 1);
 				close(file);
 			}
