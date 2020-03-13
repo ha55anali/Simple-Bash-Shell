@@ -263,12 +263,16 @@ void parseIO(char* commandLine, command_t& command)
 	command.input = NULL;
 	command.output = NULL;
 
-	//get input file
-	int iC = 0;
-	//start of input file
-	for(; iC < strlen(commandLine); ++iC)
-		if(commandLine[iC] == '<')
+	//find input divider
+	int iDiv = 0;
+	for(; iDiv < strlen(commandLine); ++iDiv)
+		if(commandLine[iDiv] == '<')
 			break;
+
+	//start of filename, ignore spaces
+	int iC = iDiv;
+	for(; commandLine[iC] != ' ' && iC < strlen(commandLine); ++iC)
+		;
 	//copy to struct
 	if(iC != strlen(commandLine))
 	{
@@ -285,11 +289,16 @@ void parseIO(char* commandLine, command_t& command)
 			command.input[c + 1] = '\0';
 		}
 	}
-	//get output file
-	int oC = 0;
-	for(; oC < strlen(commandLine); ++oC)
-		if(commandLine[oC] == '>')
+	//find output divider >
+	int oDiv = 0;
+	for(; oDiv < strlen(commandLine); ++oDiv)
+		if(commandLine[oDiv] == '>')
 			break;
+
+	//find output file by ignoring spaces
+	int oC = oDiv;
+	for(; commandLine[oC] != ' ' && strlen(commandLine) > oC; ++oC)
+		;
 	if(oC != strlen(commandLine))
 	{
 		int oLenght = 0;
@@ -305,7 +314,7 @@ void parseIO(char* commandLine, command_t& command)
 	}
 
 	//remove io redirection from commandLine string
-	commandLine[min(oC, iC)] = '\0';
+	commandLine[min(oDiv, iDiv)] = '\0';
 }
 
 char* lookupPath(char** argv, char** dir)
